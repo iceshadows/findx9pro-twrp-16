@@ -1,0 +1,35 @@
+{
+  "image": "vendor_boot",
+  "header_version": 4,
+  "page_size": 4096,
+  "ramdisk_size": 58660971,
+  "name": "",
+  "cmdline": "bootopt=64S3,32N2,64N2 bootconfig buildvariant=user",
+  "kernel_addr": 2147483648,
+  "ramdisk_addr": 2743074816,
+  "tags_addr": 2278031360,
+  "dtb_size": 646890,
+  "dtb_addr": 2278031360,
+  "header_size": 2128,
+  "table_size": 216,
+  "table_num": 2,
+  "table_entry_size": 108,
+  "bootconfig_size": 94,
+  "entries": [
+    {
+      "size": 43870890,
+      "offset": 0,
+      "type": 1,
+      "name": "",
+      "board_id": ""
+    },
+    {
+      "size": 14790081,
+      "offset": 43870890,
+      "type": 2,
+      "name": "recovery",
+      "board_id": ""
+    }
+  ],
+  "boot_os_version": null
+}
