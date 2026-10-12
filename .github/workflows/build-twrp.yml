@@ -1,0 +1,130 @@
+name: Build TWRP for PLG110
+
+# 云端 Linux 构建。三种拿到官方 vendor_boot 的方式，按优先级：
+#   1) stock_vendor_boot_url  —— 官方 vendor_boot.img 直链（最小，推荐）
+#   2) firmware_url          —— 官方固件 zip 直链（解包后自动找 vendor_boot*.img）
+#   3) 仓库内的 local-inputs/stock_vendor_boot.img
+#      （私有仓库可 git add -f 把已提取好的 A16 官方镜像提交进去，之后一键构建）
+# 注意：合并进 TWRP 的 vendor_boot 必须与**实机当前运行的固件同代**（本工程基线为
+# Android 16 的 ota_full/images_16），跨代刷入会因 DTB / 内核模块不匹配而卡开机。
+
+on:
+  workflow_dispatch:
+    inputs:
+      stock_vendor_boot_url:
+        description: 官方 vendor_boot.img 直链（优先，最省流量）
+        required: false
+        default: ""
+      firmware_url:
+        description: 或官方固件 zip 直链（含 vendor_boot.img）
+        required: false
+        default: ""
+      twrp_branch:
+        description: TWRP 源码分支
+        required: false
+        default: twrp-16.0
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@v4
+
+      # repo init 需要 git 身份，runner 默认没配
+      - name: Configure git identity
+        run: |
+          git config --global user.name  "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global color.ui false
+
+      # AOSP 需要 ~100G+，GitHub 默认 runner 只有 ~14G 可用
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@main
+        with:
+          tool-cache: true
+          android: true
+          dotnet: true
+          haskell: true
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            bc bison build-essential ccache curl flex g++-multilib gcc-multilib \
+            git gnupg gperf imagemagick lib32readline-dev lib32z1-dev \
+            libelf-dev liblz4-tool libsdl1.2-dev libssl-dev libxml2 libxml2-utils \
+            lzop pngcrush rsync schedtool squashfs-tools xsltproc zip zlib1g-dev \
+            openjdk-17-jdk python3 python-is-python3
+          mkdir -p ~/bin
+          curl -s https://storage.googleapis.com/git-repo-downloads/repo > ~/bin/repo
+          chmod a+x ~/bin/repo
+          echo "$HOME/bin" >> $GITHUB_PATH
+          df -h /
+
+      - name: Fetch stock vendor_boot
+        run: |
+          set -e
+          mkdir -p fw
+          VBOOT="device/oppo/PLG110/local-inputs/stock_vendor_boot.img"
+          if [ -n "${{ inputs.stock_vendor_boot_url }}" ]; then
+            echo "==> 从直链下载 vendor_boot.img"
+            curl -fL --retry 3 -o fw/vendor_boot.img "${{ inputs.stock_vendor_boot_url }}"
+          elif [ -n "${{ inputs.firmware_url }}" ]; then
+            echo "==> 从固件 zip 里取 vendor_boot.img"
+            curl -fL --retry 3 -o fw/firmware.zip "${{ inputs.firmware_url }}"
+            (cd fw && unzip -o firmware.zip 'vendor_boot*' >/dev/null 2>&1) \
+              || unzip -o fw/firmware.zip -d fw >/dev/null 2>&1 || true
+            found="$(find fw -name 'vendor_boot*.img' ! -name '*.img.img' | head -1)"
+            [ -n "$found" ] || { echo "::error::固件包里没找到 vendor_boot*.img"; exit 1; }
+            mv "$found" fw/vendor_boot.img
+            rm -f fw/firmware.zip
+          elif [ -f "$VBOOT" ]; then
+            echo "==> 使用仓库内已提取的 $VBOOT（注意确认代次与实机一致）"
+            cp "$VBOOT" fw/vendor_boot.img
+          else
+            echo "::error::没有官方 vendor_boot.img：请填 stock_vendor_boot_url / firmware_url，"
+            echo "::error::或在私有仓库里 git add -f $VBOOT"
+            exit 1
+          fi
+          ls -lh fw/vendor_boot.img
+          python3 -c "import struct,sys; d=open('fw/vendor_boot.img','rb').read(); \
+          print('文件大小(通常=分区大小):', len(d), 'B'); \
+          print('AVB footer:', '有' if d[-64:-60]==b'AVBf' else '无', \
+          '有效内容', struct.unpack_from('>Q', d, len(d)-52)[0] if d[-64:-60]==b'AVBf' else '')"
+
+      - name: Extract board inputs
+        run: |
+          set -e
+          cp fw/vendor_boot.img device/oppo/PLG110/local-inputs/stock_vendor_boot.img
+          python3 tools/extract_stock.py \
+            --vendor-boot fw/vendor_boot.img \
+            --device-tree device/oppo/PLG110
+          echo "==> 工具自检（含官方镜像逐字节回归）"
+          python3 tools/selftest.py
+
+      - name: Build TWRP
+        env:
+          TWRP_BRANCH: ${{ inputs.twrp_branch }}
+        run: ./tools/build_twrp.sh src
+
+      - name: Show result
+        if: always()
+        run: |
+          OUT=src/out/target/product/PLG110
+          ls -lh "$OUT"/vendor_boot.img "$OUT"/PLG110_twrp_vendor_boot.img 2>/dev/null || true
+          df -h /
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: PLG110-twrp-vendor_boot
+          path: |
+            src/out/target/product/PLG110/PLG110_twrp_vendor_boot.img
+            src/out/target/product/PLG110/vendor_boot.img
+          if-no-files-found: warn
+          retention-days: 14

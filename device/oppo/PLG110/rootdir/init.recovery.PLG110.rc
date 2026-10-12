@@ -1,0 +1,31 @@
+# PLG110 recovery init 片段
+# TODO(校准): 下列 service 名称/路径需与实机 /vendor/etc/init/*.rc 对齐后再启用。
+# 取法: adb shell ls /vendor/etc/init/ ; adb shell cat /vendor/etc/init/<file>
+
+on early-init
+    write /dev/kmsg "<6>PLG110-recovery: stage=early-init"
+on init
+    write /dev/kmsg "<6>PLG110-recovery: stage=init"
+on post-fs
+    write /dev/kmsg "<6>PLG110-recovery: stage=post-fs"
+
+# MTK TEE（解密 / FBE 依赖，需实机确认）
+#service tee-supplicant /vendor/bin/tee-supplicant
+#    class core
+#    user system
+#    group system
+#    seclabel u:r:tee:s0
+
+#service vendor.keymint-mitee /vendor/bin/hw/android.hardware.security.keymint@3.0-service.mitee
+#    class early_hal
+#    user system
+#    group system drmrpc
+
+#service vendor.gatekeeper_mitee /vendor/bin/hw/android.hardware.gatekeeper-service.mitee
+#    class hal
+#    user system
+#    group system
+
+on boot
+    # MTK 平台路径工具（部分机型需要）
+    exec u:r:update_engine:s0 root root -- /system/bin/mtk_plpath_utils

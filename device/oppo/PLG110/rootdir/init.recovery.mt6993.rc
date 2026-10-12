@@ -1,0 +1,2 @@
+# 保持平台入口稳定，机型相关逻辑放在 init.recovery.PLG110.rc
+import /init.recovery.PLG110.rc

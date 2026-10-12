@@ -1,0 +1,6 @@
+# local-inputs/ 由官方固件生成，不入库（固件受版权保护，也避免误提交）
+local-inputs/*
+!local-inputs/.gitkeep
+!local-inputs/README.md
+*.img
+*.zip

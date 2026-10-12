@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <!-- 把本仓库作为 device/oppo/PLG110 挂进 TWRP 16.0 源码树。
+       把 path 换成你自己的 git 远端；本地开发可改用
+       <linkfile> 或直接 rsync（见 tools/build_twrp.sh）。 -->
+  <remote name="local" fetch="." />
+
+  <project name="device/oppo/PLG110"
+           path="device/oppo/PLG110"
+           remote="local"
+           revision="main" />
+</manifest>

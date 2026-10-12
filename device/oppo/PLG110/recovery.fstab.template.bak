@@ -1,0 +1,41 @@
+# PLG110 recovery.fstab —— **模板**，请用 tools/extract_stock.py 从官方 fstab 生成/校对
+# 生成方式: python3 tools/extract_stock.py --firmware-dir <固件目录> --device-tree device/oppo/PLG110
+# 手动校对源: adb shell cat /vendor/etc/fstab.mt6993
+
+# ---- 逻辑分区 (super 内, Android 16 动态分区) ----
+system /system erofs ro wait,slotselect,logical
+system_ext /system_ext erofs ro wait,slotselect,logical
+vendor /vendor erofs ro wait,slotselect,logical
+product /product erofs ro wait,slotselect,logical
+odm /odm erofs ro wait,slotselect,logical
+vendor_dlkm /vendor_dlkm erofs ro wait,slotselect,logical
+odm_dlkm /odm_dlkm erofs ro wait,slotselect,logical
+system_dlkm /system_dlkm erofs ro wait,slotselect,logical
+
+# ---- ColorOS / OPPO 专有逻辑分区（默认注释，按实机 fstab.mt6993 确认后启用）----
+# my_bigball /my_bigball erofs ro wait,slotselect,logical
+# my_carrier /my_carrier erofs ro wait,slotselect,logical
+# my_company /my_company erofs ro wait,slotselect,logical
+# my_engineering /my_engineering erofs ro wait,slotselect,logical
+# my_heytap /my_heytap erofs ro wait,slotselect,logical
+# my_manifest /my_manifest erofs ro wait,slotselect,logical
+# my_preload /my_preload erofs ro wait,slotselect,logical
+# my_product /my_product erofs ro wait,slotselect,logical
+# my_stock /my_stock erofs ro wait,slotselect,logical
+# my_version /my_version erofs ro wait,slotselect,logical
+
+# ---- 物理分区 ----
+/dev/block/by-name/metadata /metadata f2fs noatime,nosuid,nodev,discard wait,check
+/dev/block/by-name/persist /persist ext4 noatime,nosuid,nodev,noauto_da_alloc,nodelalloc,commit=1 wait,check
+/dev/block/by-name/userdata /data f2fs noatime,nosuid,nodev,discard,inlinecrypt wait,check,quota,latemount,resize,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized,keydirectory=/metadata/vold/metadata_encryption,fsverity,storage,settingsstorage
+/dev/block/by-name/misc /misc emmc defaults defaults
+/dev/block/by-name/boot /boot emmc defaults slotselect
+/dev/block/by-name/init_boot /init_boot emmc defaults slotselect
+/dev/block/by-name/vendor_boot /vendor_boot emmc defaults slotselect
+/dev/block/by-name/dtbo /dtbo emmc defaults slotselect
+/dev/block/by-name/vbmeta /vbmeta emmc defaults slotselect
+/dev/block/by-name/vbmeta_system /vbmeta_system emmc defaults slotselect
+/dev/block/by-name/vbmeta_vendor /vbmeta_vendor emmc defaults slotselect
+
+# ---- USB OTG ----
+/devices/platform/soc/*.usb*/** auto auto defaults voldmanaged=usbotg:auto,storage,removable,storagename=USB-OTG

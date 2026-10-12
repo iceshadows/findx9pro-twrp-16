@@ -1,0 +1,28 @@
+# ---------------------------------------------------------------- 固件与备份
+# 官方固件、解包产物、回滚备份：体积大且受版权保护，不入库
+ota_full/
+backup/
+fw/
+
+# ------------------------------------------------ 由官方固件生成的板级输入
+# 默认不入库（含厂商 DTB 与 vendor ramdisk）。
+# 若仓库是私有的，且希望 CI 不用再给固件直链就能编译，可显式强制加入：
+#   git add -f device/oppo/PLG110/local-inputs/stock_vendor_boot.img
+#   git add -f device/oppo/PLG110/local-inputs/dtb.img
+#   git add -f device/oppo/PLG110/local-inputs/board_config.local.mk
+device/oppo/PLG110/local-inputs/*
+!device/oppo/PLG110/local-inputs/README.md
+
+# ------------------------------------------------------------------ 构建产物
+out/
+src/
+*.img
+*.ozip
+*.zip
+
+# --------------------------------------------------------------------- Python
+__pycache__/
+*.pyc
+
+# --------------------------------------------------------------------- macOS
+.DS_Store

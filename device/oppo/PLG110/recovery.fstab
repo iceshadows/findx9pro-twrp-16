@@ -1,0 +1,92 @@
+# 本文件由 tools/extract_stock.py 依据官方 fstab 生成
+# 若需保留模板注释，请先备份再覆盖
+
+
+# ==== super（动态分区宿主）====
+/dev/block/by-name/super /super emmc defaults
+
+# ==== 逻辑分区（super 内）====
+system /system erofs ro wait,slotselect,logical
+system_ext /system_ext erofs ro wait,slotselect,logical
+vendor /vendor erofs ro wait,slotselect,logical
+product /product erofs ro wait,slotselect,logical
+odm /odm erofs ro wait,slotselect,logical
+vendor_dlkm /vendor_dlkm erofs ro wait,slotselect,logical
+odm_dlkm /odm_dlkm erofs ro wait,slotselect,logical
+system_dlkm /system_dlkm erofs ro wait,slotselect,logical
+my_bigball /my_bigball erofs ro wait,slotselect,logical,nofail
+my_carrier /my_carrier erofs ro wait,slotselect,logical,nofail
+my_company /my_company erofs ro wait,slotselect,logical,nofail
+my_engineering /my_engineering erofs ro wait,slotselect,logical,nofail
+my_heytap /my_heytap erofs ro wait,slotselect,logical,nofail
+my_manifest /my_manifest erofs ro wait,slotselect,logical,nofail
+my_preload /my_preload erofs ro wait,slotselect,logical,nofail
+my_product /my_product erofs ro wait,slotselect,logical,nofail
+my_region /my_region erofs ro wait,slotselect,logical,nofail
+my_stock /my_stock erofs ro wait,slotselect,logical,nofail
+
+# ==== 数据 / 元数据分区 ====
+/dev/block/by-name/metadata /metadata f2fs noatime,nosuid,nodev,discard wait,check,formattable
+/dev/block/by-name/persist /persist ext4 noatime,nosuid,nodev,noauto_da_alloc,commit=1,nodelalloc wait,check,formattable
+/dev/block/by-name/userdata /data f2fs noatime,nosuid,nodev,discard,noflush_merge,fsync_mode=nobarrier,reserve_root=134217,resgid=1065,inlinecrypt wait,check,formattable,quota,latemount,resize,reservedsize=128m,fileencryption=aes-256-xts:aes-256-cts:v2+inlinecrypt_optimized,keydirectory=/metadata/vold/metadata_encryption
+
+# ==== 刷写分区 ====
+/dev/block/by-name/boot /boot emmc defaults nofail,slotselect
+/dev/block/by-name/init_boot /init_boot emmc defaults
+/dev/block/by-name/vendor_boot /vendor_boot emmc defaults
+/dev/block/by-name/dtbo /dtbo emmc defaults
+/dev/block/by-name/vbmeta /vbmeta emmc defaults
+/dev/block/by-name/vbmeta_system /vbmeta_system emmc defaults nofail,slotselect
+/dev/block/by-name/vbmeta_vendor /vbmeta_vendor emmc defaults nofail,slotselect
+/dev/block/by-name/misc /misc emmc defaults
+/dev/block/by-name/frp /persistent emmc defaults
+
+# ==== 其它物理分区 / 可移动存储 ====
+/devices/platform/soc/16310000.mmc* auto auto defaults voldmanaged=sdcard1:auto
+/devices/platform/usb_xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/11201000.usb0/11200000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/11211000.usb1/11210000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/16701000.usb0/16700000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/16711000.usb1/16710000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/16721000.usb2/16720000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/devices/platform/soc/16751000.usb0/16750000.xhci* auto vfat defaults voldmanaged=usbotg:auto
+/dev/block/by-name/apusys1 /apusys1 emmc defaults
+/dev/block/by-name/apusys2 /apusys2 emmc defaults
+/dev/block/by-name/audio_dsp /audio_dsp emmc defaults
+/dev/block/by-name/boot_para /boot_para emmc defaults
+/dev/block/by-name/bootloader2 /bootloader2 emmc defaults
+/dev/block/by-name/ccu /ccu emmc defaults
+/dev/block/by-name/connsys_bt /connsys_bt emmc defaults
+/dev/block/by-name/connsys_wifi /connsys_wifi emmc defaults
+/dev/block/by-name/dpm1 /dpm1 emmc defaults
+/dev/block/by-name/dpm2 /dpm2 emmc defaults
+/dev/block/by-name/expdb /expdb emmc defaults
+/dev/block/by-name/gpueb /gpueb emmc defaults
+/dev/block/by-name/gz1 /gz1 emmc defaults
+/dev/block/by-name/gz2 /gz2 emmc defaults
+/dev/block/by-name/lk1 /lk1 emmc defaults
+/dev/block/by-name/logo /logo emmc defaults
+/dev/block/by-name/mcf_ota /mcf_ota emmc defaults
+/dev/block/by-name/mcupm1 /mcupm1 emmc defaults
+/dev/block/by-name/mcupm2 /mcupm2 emmc defaults
+/dev/block/by-name/md1arm7 /md1arm7 emmc defaults
+/dev/block/by-name/md1dsp /md1dsp emmc defaults
+/dev/block/by-name/md3img /md3img emmc defaults
+/dev/block/by-name/modem /modem emmc defaults
+/dev/block/by-name/mvpu_algo1 /mvpu_algo1 emmc defaults
+/dev/block/by-name/mvpu_algo2 /mvpu_algo2 emmc defaults
+/dev/block/by-name/nvram /nvram emmc defaults
+/dev/block/by-name/odmdtbo /odmdtbo emmc defaults
+/dev/block/by-name/otp /otp emmc defaults
+/dev/block/by-name/para /para emmc defaults
+/dev/block/by-name/pi_img /pi_img emmc defaults
+/dev/block/by-name/proinfo /proinfo emmc defaults
+/dev/block/by-name/scp1 /scp1 emmc defaults
+/dev/block/by-name/scp2 /scp2 emmc defaults
+/dev/block/by-name/seccfg /seccfg emmc defaults
+/dev/block/by-name/spmfw /spmfw emmc defaults
+/dev/block/by-name/sspm1 /sspm1 emmc defaults
+/dev/block/by-name/sspm2 /sspm2 emmc defaults
+/dev/block/by-name/tee1 /tee1 emmc defaults
+/dev/block/by-name/tee2 /tee2 emmc defaults
+/dev/block/by-name/vcp /vcp emmc defaults

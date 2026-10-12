@@ -1,0 +1,5 @@
+PRODUCT_MAKEFILES := \
+    $(LOCAL_DIR)/twrp_PLG110.mk
+
+COMMON_LUNCH_CHOICES := \
+    twrp_PLG110-bp2a-eng
